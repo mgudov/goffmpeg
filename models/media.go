@@ -79,6 +79,7 @@ type Mediafile struct {
 	movflags              string
 	bframe                int
 	pixFmt                string
+	maxMuxingQueueSize    int
 }
 
 /*** SETTERS ***/
@@ -351,6 +352,10 @@ func (m *Mediafile) SetTags(val map[string]string) {
 
 func (m *Mediafile) SetBframe(v int) {
 	m.bframe = v
+}
+
+func (m *Mediafile) SetMaxMuxingQueueSize(v int) {
+	m.maxMuxingQueueSize = v
 }
 
 /*** GETTERS ***/
@@ -691,6 +696,7 @@ func (m *Mediafile) ToStrCommand() []string {
 		"MapMetadata",
 		"Tags",
 		"EncryptionKey",
+		"MaxMuxingQueueSize",
 		"OutputPath",
 		"Bframe",
 		"MovFlags",
@@ -1133,12 +1139,15 @@ func (m *Mediafile) ObtainCompressionLevel() []string {
 func (m *Mediafile) ObtainMapMetadata() []string {
 	if m.mapMetadata != "" {
 		return []string{"-map_metadata", m.mapMetadata}
-  }
-  return nil
+	}
+	return nil
 }
-    
+
 func (m *Mediafile) ObtainEncryptionKey() []string {
-	return []string{"-hls_key_info_file", m.encryptionKey}
+	if m.encryptionKey != "" {
+		return []string{"-hls_key_info_file", m.encryptionKey}
+	}
+	return nil
 }
 
 func (m *Mediafile) ObtainBframe() []string {
@@ -1155,6 +1164,13 @@ func (m *Mediafile) ObtainTags() []string {
 			result = append(result, []string{"-metadata", fmt.Sprintf("%s=%s", key, val)}...)
 		}
 		return result
-  }
-  return nil
+	}
+	return nil
+}
+
+func (m *Mediafile) ObtainMaxMuxingQueueSize() []string {
+	if m.maxMuxingQueueSize > 0 {
+		return []string{"-max_muxing_queue_size", fmt.Sprintf("%d", m.maxMuxingQueueSize)}
+	}
+	return nil
 }
